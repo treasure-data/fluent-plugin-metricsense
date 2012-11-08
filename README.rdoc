@@ -1,2 +1,25 @@
 = MetricSense - application metrics aggregation plugin for Fluentd
 
+== Example
+
+    <match metrics.**>
+        type metricsense
+    
+        # RDB backend
+        type metricsense
+        backend rdb_tsdb
+        all_segment
+        flush_interval 5m
+        remove_tag_prefix metrics
+        rdb_url mysql2://user:pass@host/mydb
+        rdb_table_prefix ms
+    
+        ## Librato Metrics backend
+        #all_segment
+        #flush_interval 5m
+        #remove_tag_prefix metrics
+        #backend librato
+        #librato_user xxxx@yyyy
+        #librato_token XYZXYZ
+    </match>
+
