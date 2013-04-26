@@ -86,6 +86,7 @@ module Fluent
 
     def format_stream(tag, es)
       out = ''
+      tag = tag.sub(@remove_tag_prefix, '') if @remove_tag_prefix
       es.each do |time,record|
         value = record[@value_key]
 
@@ -112,8 +113,6 @@ module Fluent
             segs << seg_val
           end
         }
-
-        tag.sub!(@remove_tag_prefix, '') if @remove_tag_prefix
 
         [tag, time, value, segs].to_msgpack(out)
       end
