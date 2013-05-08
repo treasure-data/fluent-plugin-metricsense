@@ -45,6 +45,7 @@ module Fluent
     config_param :backend, :string
 
     config_param :remove_tag_prefix, :string, :default => nil
+    config_param :add_tag_prefix, :string, :default => nil
 
     def configure(conf)
       super
@@ -87,6 +88,7 @@ module Fluent
     def format_stream(tag, es)
       out = ''
       tag = tag.sub(@remove_tag_prefix, '') if @remove_tag_prefix
+      tag = "#{add_tag_prefix}.#{tag}" if @add_tag_prefix
       es.each do |time,record|
         value = record[@value_key]
 
