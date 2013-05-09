@@ -22,7 +22,7 @@ module Fluent::MetricSenseOutput::Backends
   require 'json'
 
   class LibratoBackend < Fluent::MetricSenseOutput::Backend
-    Fluent::MetricSenseOutput::BACKENDS['librato'] = self
+    Fluent::MetricSenseOutput.register_backend('librato', self)
 
     config_param :librato_user, :string
     config_param :librato_token, :string

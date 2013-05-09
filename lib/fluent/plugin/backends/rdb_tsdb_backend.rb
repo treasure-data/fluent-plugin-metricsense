@@ -18,9 +18,7 @@
 module Fluent::MetricSenseOutput::Backends
 
   class RDBTSDBBackend < Fluent::MetricSenseOutput::Backend
-    include Fluent::Configurable
-
-    Fluent::MetricSenseOutput::BACKENDS['rdb_tsdb'] = self
+    Fluent::MetricSenseOutput.register_backend('rdb_tsdb', self)
 
     config_param :rdb_url, :string
     config_param :rdb_table_prefix, :string

@@ -18,7 +18,7 @@
 module Fluent::MetricSenseOutput::Backends
 
   class StdoutBackend < Fluent::MetricSenseOutput::Backend
-    Fluent::MetricSenseOutput::BACKENDS['stdout'] = self
+    Fluent::MetricSenseOutput.register_backend('stdout', self)
 
     def write(data)
       data.each {|tag,time,value,seg_key,seg_val|

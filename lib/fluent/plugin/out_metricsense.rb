@@ -23,20 +23,17 @@ module Fluent
 
     BACKENDS = {}
 
+    def self.register_backend(name, klass)
+      BACKENDS[name] = klass
+    end
+
     class Backend
       include Configurable
-
       def start
       end
-
       def shutdown
       end
     end
-
-    backend_dir = "#{File.dirname(__FILE__)}/backend"
-    Dir.glob("#{backend_dir}/*_backend.rb") {|e|
-      require e
-    }
 
     config_param :segment_keys, :string, :default => nil
     config_param :all_segment, :bool, :default => false
