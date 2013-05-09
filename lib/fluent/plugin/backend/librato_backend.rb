@@ -83,12 +83,13 @@ module Fluent::MetricSenseOutput::Backends
       end
     end
 
-    METRIC_INITIALIZE_REQUEST = [
-      "type=gauge",
-      "attributes[source_aggregate]=true",
-      "attributes[summarize_function]=sum",
-      "attributes[display_stacked]=true",
-    ].join('&')
+    METRIC_INITIALIZE_REQUEST = {
+      "type" => "gauge",
+      "attributes" => {
+        "source_aggregate" => true,
+        "summarize_function" => "sum",
+      }
+    }.to_json
 
     def ensure_metric_initialized(http, name)
       return if @initialized_metrics[name]
@@ -99,6 +100,7 @@ module Fluent::MetricSenseOutput::Backends
 
       $log.trace { "librato initialize metric: #{name}" }
       req.body = METRIC_INITIALIZE_REQUEST
+      req.set_content_type("application/json")
       res = http.request(req)
 
       # TODO error handling
