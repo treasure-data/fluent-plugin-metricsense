@@ -96,6 +96,7 @@ module Fluent::MetricSenseOutput::Backends
     METRIC_INITIALIZE_REQUEST_PER_MODE[UpdateMode::MAX] = {
         "type" => "gauge",
         "attributes" => {
+          "source_aggregate" => false,
           "summarize_function" => "max",
         }
       }.to_json
