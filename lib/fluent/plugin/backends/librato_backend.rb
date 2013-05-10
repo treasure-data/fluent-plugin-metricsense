@@ -48,7 +48,7 @@ module Fluent::MetricSenseOutput::Backends
           req.basic_auth @librato_user, @librato_token
 
           data = []
-          slice.each_with_index {|(tag,time,value,seg_key,seg_val),i|
+          slice.each_with_index {|(tag,time,value,seg_key,seg_val,mode),i|
             if seg_key
               name = "#{tag}:#{seg_key}"
               source = seg_val
@@ -63,7 +63,7 @@ module Fluent::MetricSenseOutput::Backends
             }
             h["source"] = source.to_s if source
             data << h
-            ensure_metric_initialized(http, name)
+            ensure_metric_initialized(http, name, mode)
           }
           body = {"gauges"=>data}.to_json
 
@@ -83,23 +83,31 @@ module Fluent::MetricSenseOutput::Backends
       end
     end
 
-    METRIC_INITIALIZE_REQUEST = {
-      "type" => "gauge",
-      "attributes" => {
-        "source_aggregate" => true,
-        "summarize_function" => "sum",
-      }
-    }.to_json
+    METRIC_INITIALIZE_REQUEST_PER_MODE = []
 
-    def ensure_metric_initialized(http, name)
+    METRIC_INITIALIZE_REQUEST_PER_MODE[UpdateMode::ADD] = {
+        "type" => "gauge",
+        "attributes" => {
+          "source_aggregate" => true,
+          "summarize_function" => "sum",
+        }
+      }.to_json
+
+    METRIC_INITIALIZE_REQUEST_PER_MODE[UpdateMode::LATEST] = {
+        "type" => "gauge",
+        "attributes" => {
+        }
+      }.to_json
+
+    def ensure_metric_initialized(http, name, mode)
       return if @initialized_metrics[name]
 
       header = {}
       req = Net::HTTP::Put.new("/v1/metrics/#{CGI.escape name}", header)
       req.basic_auth @librato_user, @librato_token
 
-      $log.trace { "librato initialize metric: #{name}" }
-      req.body = METRIC_INITIALIZE_REQUEST
+      $log.trace { "librato initialize metric with mode #{mode}: #{name}" }
+      req.body = METRIC_INITIALIZE_REQUEST_PER_MODE[mode]
       req.set_content_type("application/json")
       res = http.request(req)
 

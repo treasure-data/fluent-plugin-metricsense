@@ -178,7 +178,8 @@ module Fluent::MetricSenseOutput::Backends
       ensure_connect do |db|
         # group by row_key (base_time,metric_id,segment_id)
         rows = {}
-        data.each {|(tag,time,value,seg_key,seg_val)|
+        data.each {|tag,time,value,seg_key,seg_val,mode|
+          # TODO update_mode is not supported yet
           base_time = time / ROW_TIME_WINDOW
           metric_id = get_metric_id(db, tag, seg_key)
           segment_id = get_segment_id(db, seg_val) if seg_val

@@ -21,7 +21,7 @@ module Fluent::MetricSenseOutput::Backends
     Fluent::MetricSenseOutput.register_backend('stdout', self)
 
     def write(data)
-      data.each {|tag,time,value,seg_key,seg_val|
+      data.each {|tag,time,value,seg_key,seg_val,mode|
         if seg_key
           puts "#{Time.at(time)} #{tag}: #{value}"
         else
