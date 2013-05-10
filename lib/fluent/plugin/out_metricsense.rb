@@ -29,7 +29,7 @@ module Fluent
 
     module UpdateMode
       ADD = 0
-      LATEST = 1
+      MAX = 1
     end
 
     class Backend
@@ -129,8 +129,8 @@ module Fluent
         # get update_mode key
         update_mode = record.delete(@update_mode_key)
         case update_mode
-        when "latest"
-          update_mode = UpdateMode::LATEST
+        when "max"
+          update_mode = UpdateMode::MAX
         else
           # default is add
           update_mode = UpdateMode::ADD
@@ -178,18 +178,21 @@ module Fluent
       end
     end
 
-    class LatestUpdater
+    class MaxUpdater
       def initialize
         @value = 0
       end
       attr_reader :value
 
       def add(value)
-        @value += value
+        if @value < value
+          @value = value
+        end
+        @value
       end
 
       def mode
-        UpdateMode::LATEST
+        UpdateMode::MAX
       end
     end
 
@@ -205,8 +208,8 @@ module Fluent
         case update_mode
         when UpdateMode::ADD
           updater = AddUpdater
-        when UpdateMode::LATEST
-          updater = LatestUpdater
+        when UpdateMode::MAX
+          updater = MaxUpdater
         else  # default is AddUpdater
           updater = AddUpdater
         end
