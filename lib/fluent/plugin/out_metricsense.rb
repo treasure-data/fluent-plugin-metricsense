@@ -61,6 +61,8 @@ module Fluent
 
     config_param :backend, :string
 
+    config_param :aggregate_interval, :integer, :default => 60
+
     def configure(conf)
       super
 
@@ -203,7 +205,7 @@ module Fluent
 
       # select sum(value) from chunk group by tag, time/60, seg_val, seg_key
       chunk.msgpack_each {|tag,time,value,segments,update_mode|
-        time = time / 60 * 60
+        time = time / @aggregate_interval * @aggregate_interval
 
         case update_mode
         when UpdateMode::ADD
