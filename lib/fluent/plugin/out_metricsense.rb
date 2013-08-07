@@ -61,7 +61,7 @@ module Fluent
 
     config_param :backend, :string
 
-    config_param :aggregate_interval, :integer, :default => 60
+    config_param :aggregate_interval, :time, :default => 60
 
     def configure(conf)
       super
@@ -84,6 +84,11 @@ module Fluent
       unless be
         raise ConfigError, "unknown backend: #{@backend.inspect}"
       end
+
+      # aggregate_interval must be a multiple of 60 to normalize values
+      # into X per minute
+      @aggregate_interval = @aggregate_interval.to_i / 60 * 60
+      @normalize_factor = @aggregate_interval / 60
 
       @backend = be.new
       @backend.configure(conf)
@@ -171,6 +176,10 @@ module Fluent
       end
       attr_reader :value
 
+      def normalized_value(n)
+        n == 1 ? @value : @value.to_f / n
+      end
+
       def add(value)
         @value += value
       end
@@ -185,6 +194,10 @@ module Fluent
         @value = 0
       end
       attr_reader :value
+
+      def normalized_value(n)
+        @value
+      end
 
       def add(value)
         if @value < value
@@ -231,7 +244,7 @@ module Fluent
 
       data = []
       counters.each_pair {|ak,up|
-        data << [ak.tag, ak.time, up.value, ak.seg_key, ak.seg_val, up.mode]
+        data << [ak.tag, ak.time, up.normalized_value(@normalize_factor), ak.seg_key, ak.seg_val, up.mode]
       }
 
       @backend.write(data)
