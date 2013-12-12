@@ -30,6 +30,7 @@ module Fluent
     module UpdateMode
       ADD = 0
       MAX = 1
+      AVERAGE = 2
     end
 
     class Backend
@@ -138,6 +139,8 @@ module Fluent
         case update_mode
         when "max"
           update_mode = UpdateMode::MAX
+        when "average"
+          update_mode = UpdateMode::AVERAGE
         else
           # default is add
           update_mode = UpdateMode::ADD
@@ -211,6 +214,12 @@ module Fluent
       end
     end
 
+    class AverageUpdater < MaxUpdater
+      def mode
+        UpdateMode::AVERAGE
+      end
+    end
+
     AggregationKey = Struct.new(:tag, :time, :seg_val, :seg_key)
 
     def write(chunk)
@@ -225,6 +234,8 @@ module Fluent
           updater = AddUpdater
         when UpdateMode::MAX
           updater = MaxUpdater
+        when UpdateMode::AVERAGE # AVERAGE uses MaxUpdater and calculate average on server-side aggregation
+          updater = AverageUpdater
         else  # default is AddUpdater
           updater = AddUpdater
         end
