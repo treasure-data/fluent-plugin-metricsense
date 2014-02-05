@@ -67,14 +67,14 @@ module Fluent::MetricSenseOutput::Backends
           }
           body = {"gauges"=>data}.to_json
 
-          $log.trace { "librato metrics: #{data.inspect}" }
+          log.trace { "librato metrics: #{data.inspect}" }
           req.body = body
           req.set_content_type("application/json")
           res = http.request(req)
 
           # TODO error handling
           if res.code != "200"
-            $log.warn "librato_metrics: #{res.code}: #{res.body}"
+            log.warn "librato_metrics: #{res.code}: #{res.body}"
           end
         }
 
@@ -117,14 +117,14 @@ module Fluent::MetricSenseOutput::Backends
       req = Net::HTTP::Put.new("/v1/metrics/#{CGI.escape name}", header)
       req.basic_auth @librato_user, @librato_token
 
-      $log.trace { "librato initialize metric with mode #{mode}: #{name}" }
+      log.trace { "librato initialize metric with mode #{mode}: #{name}" }
       req.body = METRIC_INITIALIZE_REQUEST_PER_MODE[mode]
       req.set_content_type("application/json")
       res = http.request(req)
 
       # TODO error handling
       if res.code !~ /20./
-        $log.warn "librato_metrics: #{res.code}: #{res.body}"
+        log.warn "librato_metrics: #{res.code}: #{res.body}"
       else
         @initialized_metrics[name] = true
       end

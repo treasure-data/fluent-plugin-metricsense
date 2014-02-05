@@ -36,6 +36,9 @@ module Fluent
     class Backend
       UpdateMode = MetricSenseOutput::UpdateMode
       include Configurable
+
+      attr_accessor :log
+
       def start
       end
       def shutdown
@@ -63,6 +66,10 @@ module Fluent
     config_param :backend, :string
 
     config_param :aggregate_interval, :time, :default => 60
+
+    unless method_defined?(:log)
+      define_method(:log) { $log }
+    end
 
     def configure(conf)
       super
@@ -92,6 +99,7 @@ module Fluent
       @normalize_factor = @aggregate_interval / 60
 
       @backend = be.new
+      @backend.log = log
       @backend.configure(conf)
     end
 
