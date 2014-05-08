@@ -26,6 +26,7 @@ module Fluent::MetricSenseOutput::Backends
 
     config_param :librato_user, :string
     config_param :librato_token, :string
+    config_param :batch_size, :integer, :default => 200
 
     def initialize
       super
@@ -43,7 +44,7 @@ module Fluent::MetricSenseOutput::Backends
 
       begin
         # send upto 50 entries at once
-        data.each_slice(50) {|slice|
+        data.each_slice(@batch_size) {|slice|
           req = Net::HTTP::Post.new('/v1/metrics', header)
           req.basic_auth @librato_user, @librato_token
 
