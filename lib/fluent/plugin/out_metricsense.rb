@@ -285,7 +285,6 @@ module Fluent
 
       data = []
       counters.each_pair {|ak,up|
-        p [ak.tag, ak.time, up.normalized_value(@normalize_factor), ak.seg_key, ak.seg_val, up.mode]
         data << [ak.tag, ak.time, up.normalized_value(@normalize_factor), ak.seg_key, ak.seg_val, up.mode]
       }
 
