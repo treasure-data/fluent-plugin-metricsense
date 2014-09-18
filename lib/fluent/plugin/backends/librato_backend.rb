@@ -111,6 +111,14 @@ module Fluent::MetricSenseOutput::Backends
         }
       }.to_json
 
+    METRIC_INITIALIZE_REQUEST_PER_MODE[UpdateMode::COUNT] = {
+        "type" => "gauge",
+        "attributes" => {
+          "aggregate" => false,
+          "source_aggregate" => false,
+        }
+      }.to_json
+
     def ensure_metric_initialized(http, name, mode)
       return if @initialized_metrics[name]
 
