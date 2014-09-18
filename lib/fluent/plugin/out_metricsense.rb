@@ -210,7 +210,7 @@ module Fluent
       attr_reader :value
  
       def normalized_value(n)
-        n == 1 ? @value : @value.to_f / n
+        @value
       end
  
       def add(value)
