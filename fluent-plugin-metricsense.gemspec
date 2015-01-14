@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.version     = File.read("VERSION").strip
   s.authors     = ["Sadayuki Furuhashi"]
   s.email       = "sf@treasure-data.com"
+  s.license     = "Apache-2.0"
   s.has_rdoc    = false
   s.require_paths = ['lib']
   #s.platform    = Gem::Platform::RUBY
