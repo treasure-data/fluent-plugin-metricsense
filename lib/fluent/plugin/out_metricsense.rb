@@ -47,6 +47,7 @@ module Fluent
 
     module Backends
       backend_dir = "#{File.dirname(__FILE__)}/backends"
+      require "#{backend_dir}/datadog_backend"
       require "#{backend_dir}/librato_backend"
       require "#{backend_dir}/rdb_tsdb_backend"
       require "#{backend_dir}/stdout_backend"
