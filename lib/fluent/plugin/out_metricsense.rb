@@ -31,6 +31,7 @@ module Fluent
       ADD = 0
       MAX = 1
       AVERAGE = 2
+      COUNT = 3
     end
 
     class Backend
@@ -150,6 +151,8 @@ module Fluent
           update_mode = UpdateMode::MAX
         when "average"
           update_mode = UpdateMode::AVERAGE
+        when "count"
+          update_mode = UpdateMode::COUNT
         else
           # default is add
           update_mode = UpdateMode::ADD
@@ -196,6 +199,25 @@ module Fluent
         @value += value
       end
 
+      def mode
+        UpdateMode::ADD
+      end
+    end
+
+    class CountUpdater
+      def initialize
+        @value = 0
+      end
+      attr_reader :value
+ 
+      def normalized_value(n)
+        @value
+      end
+ 
+      def add(value)
+        @value += 1
+      end
+ 
       def mode
         UpdateMode::ADD
       end
@@ -255,6 +277,8 @@ module Fluent
           updater = MaxUpdater
         when UpdateMode::AVERAGE # AVERAGE uses MaxUpdater and calculate average on server-side aggregation
           updater = AverageUpdater
+        when UpdateMode::COUNT
+          updater = CountUpdater
         else  # default is AddUpdater
           updater = AddUpdater
         end
