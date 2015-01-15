@@ -50,19 +50,22 @@ module Fluent::MetricSenseOutput::Backends
           if seg_key and seg_val
             # segmented values
             metric = "#{tag}_by_#{seg_key}"
+            segment = "#{seg_key}:#{seg_val}"
           else
             # simple values
             metric = tag
+            segment = ""
           end
-          metric_points[metric] ||= []
-          metric_points[metric].push([seg_key, seg_val, [Time.at(time), value]])
+          metric_points[metric] ||= {}
+          metric_points[metric][segment] ||= []
+          metric_points[metric][segment].push([Time.at(time), value])
         end
 
         metric_points.each do |metric, segment_points|
-          segment_points.each do |(seg_key, seg_val, points)|
+          segment_points.each do |segment, points|
             tags = @tags.dup
-            if seg_key and seg_val
-              tags.push("#{seg_key}:#{seg_val}")
+            if segment and not segment.empty?
+              tags.push(segment)
             end
 
             options = {}
