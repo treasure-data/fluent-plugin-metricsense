@@ -209,15 +209,15 @@ module Fluent
         @value = 0
       end
       attr_reader :value
- 
+
       def normalized_value(n)
         @value
       end
- 
+
       def add(value)
         @value += 1
       end
- 
+
       def mode
         UpdateMode::ADD
       end
