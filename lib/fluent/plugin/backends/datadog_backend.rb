@@ -49,26 +49,20 @@ module Fluent::MetricSenseOutput::Backends
         slice.each do |tag, time, value, seg_key, seg_val|
           if seg_key and seg_val
             # segmented values
-            segment = "#{seg_key}:#{seg_val}"
+            metric = "#{tag}_by_#{seg_key}"
           else
             # simple values
-            segment = "simple"
+            metric = tag
           end
-          metric = tag # use fluentd's tag as metric name on datadog
-          metric_points[metric] ||= {}
-          metric_points[metric][segment] ||= []
-          metric_points[metric][segment].push([Time.at(time), value])
+          metric_points[metric] ||= []
+          metric_points[metric].push([seg_key, seg_val, [Time.at(time), value]])
         end
 
         metric_points.each do |metric, segment_points|
-          segment_points.each do |segment, points|
-            seg_key, seg_val = segment.split(":", 2)
-
+          segment_points.each do |(seg_key, seg_val, points)|
             tags = @tags.dup
-            tags.push(segment)
             if seg_key and seg_val
-              # add seg_key as a tag to allow calculating metrics over the segment name
-              tags.push(seg_key)
+              tags.push("#{seg_key}:#{seg_val}")
             end
 
             options = {}
