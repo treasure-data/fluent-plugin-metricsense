@@ -76,6 +76,7 @@ module Fluent::MetricSenseOutput::Backends
             options["host"] = @host if @host
             options["type"] = "gauge"
 
+            log.debug("datadog emit points: metric=#{metric}, points=#{points.inspect}, options=#{options.inspect}")
             @dog.emit_points(metric, points, options)
           end
         end
