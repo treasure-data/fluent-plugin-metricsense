@@ -77,7 +77,10 @@ module Fluent::MetricSenseOutput::Backends
             options["type"] = "gauge"
 
             log.debug("datadog emit points: metric=#{metric}, points=#{points.inspect}, options=#{options.inspect}")
-            @dog.emit_points(metric, points, options)
+            code, response = @dog.emit_points(metric, points, options)
+            if code.to_i / 100 != 2
+              raise("datadog returns #{code}: #{response.inspect}")
+            end
           end
         end
       end
