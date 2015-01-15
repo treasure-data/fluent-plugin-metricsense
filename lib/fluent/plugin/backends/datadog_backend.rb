@@ -72,9 +72,9 @@ module Fluent::MetricSenseOutput::Backends
             end
 
             options = {}
-            options["tags"] = tags
-            options["host"] = @host if @host
-            options["type"] = "gauge"
+            options[:tags] = tags
+            options[:host] = @host if @host
+            options[:type] = "gauge"
 
             log.debug("datadog emit points: metric=#{metric}, points=#{points.inspect}, options=#{options.inspect}")
             code, response = @dog.emit_points(metric, points, options)
