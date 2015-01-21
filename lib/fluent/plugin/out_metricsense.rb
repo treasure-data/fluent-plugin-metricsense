@@ -134,7 +134,7 @@ module Fluent
         rescue
           next
         end
-        next if fv == 0.0
+        next if fv == 0.0 || fv.nan? || fv.infinite?
 
         # use integer if value.to_f == value.to_f.to_i
         iv = fv.to_i
