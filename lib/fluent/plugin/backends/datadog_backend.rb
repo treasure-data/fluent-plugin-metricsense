@@ -23,6 +23,8 @@ module Fluent::MetricSenseOutput::Backends
     config_param :dd_api_key, :string
     config_param :dd_app_key, :string, :default => nil
     config_param :host, :string, :default => nil
+    config_param :device, :string, :default => nil
+    config_param :timeout, :integer, :default => 5
     config_param :tags, :array, :default => []
     config_param :batch_size, :integer, :default => 200
 
@@ -38,9 +40,8 @@ module Fluent::MetricSenseOutput::Backends
         raise Fluent::ConfigError, "missing Datadog API key"
       end
 
-      client_args = [@dd_api_key]
-      client_args << @dd_app_key if @dd_app_key
-      @dog = Dogapi::Client.new(*client_args)
+      silent = true
+      @dog = Dogapi::Client.new(@dd_api_key, @dd_app_key, @host, @device, silent, @timeout)
     end
 
     def write(data)
