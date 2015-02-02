@@ -40,7 +40,7 @@ module Fluent::MetricSenseOutput::Backends
         raise Fluent::ConfigError, "missing Datadog API key"
       end
 
-      silent = true
+      silent = false # raise exceptions on dogapi errors
       @dog = Dogapi::Client.new(@dd_api_key, @dd_app_key, @host, @device, silent, @timeout)
     end
 
@@ -75,9 +75,15 @@ module Fluent::MetricSenseOutput::Backends
             options[:type] = "gauge"
 
             log.debug("datadog emit points: metric=#{metric}, points=#{points.inspect}, options=#{options.inspect}")
-            code, response = @dog.emit_points(metric, points, options)
+            begin
+              code, response = @dog.emit_points(metric, points, options)
+            rescue Exception => error
+              # dogapi may raise an Exception.
+              # fluentd expects StandardError as retriable error, though.
+              raise("datadog error: #{error.class}: #{error.message}")
+            end
             if code.to_i / 100 != 2
-              raise("datadog returns #{code}: #{response.inspect}")
+              raise("datadog error: HTTP #{code}: #{response.inspect}")
             end
           end
         end
