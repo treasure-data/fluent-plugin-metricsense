@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.test_files  = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
-  s.add_dependency "fluentd", "~> 0.10.6"
+  s.add_dependency "fluentd", ">= 0.10.6"
   s.add_dependency "dogapi"
   s.add_development_dependency "rake", ">= 0.8.7"
   s.add_development_dependency 'bundler', ['>= 1.0.0']
