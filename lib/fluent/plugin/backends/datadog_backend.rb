@@ -62,30 +62,27 @@ module Fluent::MetricSenseOutput::Backends
           metric_points[metric][segment].push([Time.at(time), value])
         end
 
-        metric_points.each do |metric, segment_points|
-          segment_points.each do |segment, points|
-            tags = @tags.dup
-            if segment and not segment.empty?
-              tags.push(segment)
-            end
-
-            options = {}
-            options[:tags] = tags
-            options[:host] = @host if @host
-            options[:type] = "gauge"
-
-            log.debug("datadog emit points: metric=#{metric}, points=#{points.inspect}, options=#{options.inspect}")
-            begin
-              code, response = @dog.emit_points(metric, points, options)
-            rescue Exception => error
-              # dogapi may raise an Exception.
-              # fluentd expects StandardError as retriable error, though.
-              raise("datadog error: #{error.class}: #{error.message}")
-            end
-            if code.to_i / 100 != 2
-              raise("datadog error: HTTP #{code}: #{response.inspect}")
+        begin
+          log.debug("sending #{metric_points.length} metric(s) to datadog...")
+          @dog.batch_metrics do
+            metric_points.each do |metric, segment_points|
+              segment_points.each do |segment, points|
+                tags = @tags.dup
+                if segment and not segment.empty?
+                  tags.push(segment)
+                end
+                options = {}
+                options[:tags] = tags
+                options[:host] = @host if @host
+                options[:type] = "gauge"
+                @dog.emit_points(metric, points, options)
+              end
             end
           end
+        rescue Exception => error
+           # dogapi may raise an Exception.
+           # fluentd expects StandardError as retriable error, though.
+           raise("datadog error: #{error.class}: #{error.message}")
         end
       end
     end
