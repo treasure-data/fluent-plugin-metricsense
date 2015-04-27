@@ -128,13 +128,16 @@ module Fluent
         # get value
         value = record.delete(@value_key)
 
-        # ignore record if value is invalid or 0
+        # ignore record if value is missing
+        next if value.nil?
+
+        # ignore record if value is invalid
         begin
           fv = value.to_f
         rescue
           next
         end
-        next if fv == 0.0 || fv.nan? || fv.infinite?
+        next if fv.nan? || fv.infinite?
 
         # use integer if value.to_f == value.to_f.to_i
         iv = fv.to_i
