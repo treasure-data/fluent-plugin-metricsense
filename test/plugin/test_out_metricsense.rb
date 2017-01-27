@@ -42,4 +42,15 @@ class MetricsenseOutputTest < Test::Unit::TestCase
       assert_equal ['test', t, 1, nil, nil, 0], written.shift
     end
   end
+
+  # server restart can cause broken buffer and broken chunk.
+  # out_metricsense ignore the chunk with warning log
+  def test_skip_broken_chunk
+    d = create_driver(CONFIG)
+    data = {'value' => 1, 'user_id' => 23456, 'path' => '/auth/login'}
+    d.emit(data, data)
+    d.run
+
+    assert_equal [], TestBackend.data.first
+  end
 end
