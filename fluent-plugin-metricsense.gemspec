@@ -20,5 +20,6 @@ Gem::Specification.new do |s|
   s.add_dependency "dogapi"
   s.add_development_dependency "rake", ">= 0.8.7"
   s.add_development_dependency 'bundler', ['>= 1.0.0']
-  s.add_development_dependency "simplecov", ">= 0.5.4"
+  s.add_development_dependency "test-unit", ">= 3.1.1"
+  s.add_development_dependency "simplecov", ">= 0.10.0"
 end
