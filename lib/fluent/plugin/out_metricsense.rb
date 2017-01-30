@@ -182,7 +182,7 @@ module Fluent
           end
         end
 
-        [tag, time, value, segments, update_mode].to_msgpack(out)
+        out << [tag, time, value, segments, update_mode].to_msgpack
       end
 
       out
