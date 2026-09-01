@@ -18,8 +18,18 @@
 #
 module Fluent
 
-  class MetricSenseOutput < Fluent::BufferedOutput
+  class MetricSenseOutput < Fluent::Plugin::Output
     Fluent::Plugin.register_output('metricsense', self)
+
+    helpers :compat_parameters
+
+    def formatted_to_msgpack_binary?
+      true
+    end
+
+    def compat_parameters_default_chunk_key
+      ""
+    end
 
     BACKENDS = {}
 
@@ -36,7 +46,7 @@ module Fluent
 
     class Backend
       UpdateMode = MetricSenseOutput::UpdateMode
-      include Configurable
+      include Fluent::Configurable
 
       attr_accessor :log
 
@@ -69,11 +79,8 @@ module Fluent
 
     config_param :aggregate_interval, :time, :default => 60
 
-    unless method_defined?(:log)
-      define_method(:log) { $log }
-    end
-
     def configure(conf)
+      compat_parameters_convert(conf, :buffer)
       super
 
       if @remove_tag_prefix
@@ -111,81 +118,62 @@ module Fluent
     end
 
     def shutdown
-      super
       @backend.shutdown
+      super
     end
 
-    def format_stream(tag, es)
-      # modify tag
+    def format(tag, time, record)
       tag = tag.sub(@remove_tag_prefix, '') if @remove_tag_prefix
-      tag = "#{add_tag_prefix}.#{tag}" if @add_tag_prefix
+      tag = "#{@add_tag_prefix}.#{tag}" if @add_tag_prefix
 
-      out = ''
-      es.each do |time,record|
-        # dup record to modify
-        record = record.dup
+      record = record.dup
 
-        # get value
-        value = record.delete(@value_key)
+      value = record.delete(@value_key)
+      return nil if value.nil?
 
-        # ignore record if value is missing
-        next if value.nil?
+      begin
+        fv = value.to_f
+      rescue
+        return nil
+      end
+      return nil if fv.nan? || fv.infinite?
 
-        # ignore record if value is invalid
-        begin
-          fv = value.to_f
-        rescue
-          next
-        end
-        next if fv.nan? || fv.infinite?
+      iv = fv.to_i
+      value = iv.to_f == fv ? iv : fv
 
-        # use integer if value.to_f == value.to_f.to_i
-        iv = fv.to_i
-        if iv.to_f == fv
-          value = iv
-        else
-          value = fv
-        end
-
-        # get update_mode key
-        update_mode = record.delete(@update_mode_key)
-        case update_mode
-        when "max"
-          update_mode = UpdateMode::MAX
-        when "average"
-          update_mode = UpdateMode::AVERAGE
-        when "count"
-          update_mode = UpdateMode::COUNT
-        else
-          # default is add
-          update_mode = UpdateMode::ADD
-        end
-
-        # get segments
-        if @no_segment_keys
-          segments = {}
-        else
-          if @only_segment_keys
-            segments = {}
-            @only_segment_keys.each {|key|
-              if v = record[key]
-                segments[key] = v
-              end
-            }
-          else
-            segments = record
-          end
-          if @exclude_segment_keys
-            @exclude_segment_keys.each {|key|
-              segments.delete(key)
-            }
-          end
-        end
-
-        [tag, time, value, segments, update_mode].to_msgpack(out)
+      update_mode = record.delete(@update_mode_key)
+      case update_mode
+      when "max"
+        update_mode = UpdateMode::MAX
+      when "average"
+        update_mode = UpdateMode::AVERAGE
+      when "count"
+        update_mode = UpdateMode::COUNT
+      else
+        update_mode = UpdateMode::ADD
       end
 
-      out
+      if @no_segment_keys
+        segments = {}
+      else
+        if @only_segment_keys
+          segments = {}
+          @only_segment_keys.each {|key|
+            if v = record[key]
+              segments[key] = v
+            end
+          }
+        else
+          segments = record
+        end
+        if @exclude_segment_keys
+          @exclude_segment_keys.each {|key|
+            segments.delete(key)
+          }
+        end
+      end
+
+      [tag, time.to_i, value, segments, update_mode].to_msgpack
     end
 
     class AddUpdater
